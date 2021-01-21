@@ -83,24 +83,34 @@ exports.getEncryption = async () => {
 };
 
 exports.userLogin = async email => {
-  try {
-      const settings = {
-        url: 'https://www.example.com',
-        handleCodeInApp: true,
-      };
-      admin
-        .auth()
-        .generateSignInWithEmailLink(email, settings)
-        .then((link) => {
-            firebase.auth().sendSignInLinkToEmail(email, settings);
-            firebase.auth().signInWithEmailLink(email, link);
-            // console.log("link", link);
-  })
-  } catch(error) {
-      console.error(error);
-      throw error;
-  }
-}
+	try {
+		const settings = {
+			url: 'https://www.example.com',
+			handleCodeInApp: true
+		};
+		admin
+			.auth()
+			.generateSignInWithEmailLink(email, settings)
+			.then(link => {
+				firebase.auth().fetchSignInMethodsForEmail(email)
+					.then(signInMethods => {
+						if (signInMethods.length) {
+              // The email already exists in the Auth database and has a signInMethod
+              firebase.auth().sendSignInLinkToEmail(email, settings);
+              firebase.auth().signInWithEmailLink(email, link);
+						} else {
+              console.log("this email doesn't exist or is not verified");
+						}
+					})
+					.catch(error => {
+						console.log( "this email doesn't exist or is not verified", error);
+					});
+			});
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
 
 exports.register = async email => {
   try {
