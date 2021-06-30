@@ -53,7 +53,7 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
     }
 
     // Attach the message.    
-    await mamAttach(node, message, tag || defaultTag);
+    const { messageId } = await mamAttach(node, message, tag || defaultTag);
     
     channelState.root = root;
     channelState.address = message.address;
@@ -66,10 +66,10 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
       logs.push(message);
       console.log(message);
 
-      if (bundleHash) {
-        const bundleMessage = `Bundle hash: ${bundleHash}`;
-        logs.push(bundleMessage);
-        console.log(bundleMessage);
+      if (messageId) {
+        const newMessage = `MessageId: ${messageId}`;
+        logs.push(newMessage);
+        console.log(newMessage);
       }
 
       await logMessage(logs, 'logs', streamId);
