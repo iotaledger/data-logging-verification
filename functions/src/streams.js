@@ -15,9 +15,9 @@ const generateSeed = (length = 81) => {
   return seed;
 };
 
-//TODO: Migrate, can we make this work with C2-MAM?
 const getExplorerURL = (root, sideKey, network) => {
-  return `https://utils.iota.org/mam/${root}/restricted/${sideKey}/${network}`;
+  //TODO: network needs to be replaced with "testnet" instead of "devnet" in firebase settings table
+  return `https://explorer.iota.org/${network}/streams/0/${root}/restricted/${sideKey}`
 };
 
 const publish = async (payload, tag, currentState = {}, streamId = null) => {
@@ -58,7 +58,6 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
     channelState.root = root;
     channelState.address = message.address;
 
-    //TODO: utils.iota.org is currently offline - Does it even work with C2-MAM?
     const explorer = getExplorerURL(root, sideKey, network);
 
     if (settings.enableCloudLogs) {
