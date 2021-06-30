@@ -1,8 +1,6 @@
 const crypto = require('crypto');
 const isEmpty = require('lodash/isEmpty');
-const { composeAPI } = require('@iota/core');
-const { asciiToTrytes, trytesToAscii } = require('@iota/converter')
-const { createChannel, createMessage, mamAttach, mamFetchAll } = require('@iota/mam.js');
+const { createChannel, createMessage, mamAttach, mamFetchAll, TrytesHelper } = require('@iota/mam.js');
 const { getSettings, logMessage } = require('./firebase');
 
 const generateSeed = (length = 81) => {
@@ -17,6 +15,7 @@ const generateSeed = (length = 81) => {
   return seed;
 };
 
+//TODO: Migrate, can we make this work with C2-MAM?
 const getExplorerURL = (root, sideKey, network) => {
   return `https://utils.iota.org/mam/${root}/restricted/${sideKey}/${network}`;
 };
@@ -34,7 +33,7 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
 
   try {
     // Setup the details for the channel.
-    const { depth, mwm, node, security, defaultTag, network } = settings.tangle;
+    const { node, security, defaultTag, network } = settings.tangle;
     let channelState = !isEmpty(currentState) ? currentState : null;
     const sideKey = !isEmpty(currentState) ? currentState.sideKey : generateSeed();
 
@@ -44,7 +43,7 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
     }
 
     // Create a Streams message using the channel state.
-    const message = createMessage(channelState, asciiToTrytes(JSON.stringify(payload)));
+    const message = createMessage(channelState, TrytesHelper.fromAscii(JSON.stringify(payload)));
     const root = !isEmpty(currentState) ? currentState.root : message.root;
 
     if (settings.enableCloudLogs) {
@@ -54,15 +53,14 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
     }
 
     // Attach the message.    
-    const api = composeAPI({ provider: node });
-
-    const bundle = await mamAttach(api, message, depth, mwm, tag || defaultTag);
-    const bundleHash = bundle && bundle.length && bundle[0].hash;
+    await mamAttach(node, message, tag || defaultTag);
+    // const bundleHash = bundle && bundle.length && bundle[0].hash;
     
-    channelState.bundleHash = bundleHash;
+    // channelState.bundleHash = bundleHash;
     channelState.root = root;
     channelState.address = message.address;
 
+    //TODO: utils.iota.org is currently offline - Does it even work with C2-MAM?
     const explorer = getExplorerURL(root, sideKey, network);
 
     if (settings.enableCloudLogs) {
@@ -105,17 +103,16 @@ const fetch = async (channelState, streamId = null) => {
     // Setup the details for the channel.
     const { chunkSize, node } = settings.tangle;
     const { root, sideKey } = channelState;
-    const api = composeAPI({ provider: node });
 
     settings.enableCloudLogs && logs.push('Fetching from Tangle, please wait...', root);
 
-    const fetched = await mamFetchAll(api, root, 'restricted', sideKey, chunkSize);
+    const fetched = await mamFetchAll(node, root, 'restricted', sideKey, chunkSize);
     const result = [];
         
     if (fetched && fetched.length > 0) {
         for (let i = 0; i < fetched.length; i++) {
           fetched[i] && fetched[i].message && 
-          result.push(JSON.parse(trytesToAscii(fetched[i].message)));
+          result.push(JSON.parse(TrytesHelper.toAscii(fetched[i].message)));
         }
     }
     
