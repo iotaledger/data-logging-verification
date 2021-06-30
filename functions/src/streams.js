@@ -54,9 +54,7 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
 
     // Attach the message.    
     await mamAttach(node, message, tag || defaultTag);
-    // const bundleHash = bundle && bundle.length && bundle[0].hash;
     
-    // channelState.bundleHash = bundleHash;
     channelState.root = root;
     channelState.address = message.address;
 
