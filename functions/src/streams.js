@@ -7,10 +7,10 @@ const generateSeed = (length = 81) => {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ9';
   let seed = '';
   while (seed.length < length) {
-      const byte = crypto.randomBytes(1);
-      if (byte[0] < 243) {
-          seed += charset.charAt(byte[0] % 27);
-      }
+    const byte = crypto.randomBytes(1);
+    if (byte[0] < 243) {
+      seed += charset.charAt(byte[0] % 27);
+    }
   }
   return seed;
 };
@@ -54,7 +54,6 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
 
     // Attach the message.    
     const { messageId } = await mamAttach(node, message, tag || defaultTag);
-    
     channelState.root = root;
     channelState.address = message.address;
 
@@ -98,21 +97,39 @@ const fetch = async (channelState, streamId = null) => {
 
   try {
     // Setup the details for the channel.
-    const { chunkSize, node } = settings.tangle;
+    const { chunkSize, permanode } = settings.tangle;
     const { root, sideKey } = channelState;
 
     settings.enableCloudLogs && logs.push('Fetching from Tangle, please wait...', root);
 
+    var permanodeEndpoint = permanode;
+
+    //Just to be sure we have deterministic derivation of paths
+    if (!permanodeEndpoint.endsWith("/"))
+      permanodeEndpoint += "/"
+
+    const arrayURL = permanode.split("/");
+
+    const baseUrl = arrayURL.slice(0, arrayURL.length - 3).join("/");
+    var derivedBasePath = arrayURL.slice(arrayURL.length - 3, arrayURL.length).join("/");
+
+    //Assert basePath is beginning and ending with a slash (required)
+    if (!derivedBasePath.endsWith("/"))
+      derivedBasePath += "/";
+
+    if (!derivedBasePath.startsWith("/"))
+      derivedBasePath = "/" + derivedBasePath;
+
+    const node = new SingleNodeClient(baseUrl, { basePath: derivedBasePath });
     const fetched = await mamFetchAll(node, root, 'restricted', sideKey, chunkSize);
     const result = [];
-        
     if (fetched && fetched.length > 0) {
-        for (let i = 0; i < fetched.length; i++) {
-          fetched[i] && fetched[i].message && 
+      for (let i = 0; i < fetched.length; i++) {
+        fetched[i] && fetched[i].message &&
           result.push(JSON.parse(TrytesHelper.toAscii(fetched[i].message)));
-        }
+      }
     }
-    
+
     if (settings.enableCloudLogs) {
       if (result.length) {
         // Log success
