@@ -102,25 +102,7 @@ const fetch = async (channelState, streamId = null) => {
 
     settings.enableCloudLogs && logs.push('Fetching from Tangle, please wait...', root);
 
-    var permanodeEndpoint = permanode;
-
-    //Just to be sure we have deterministic derivation of paths
-    if (!permanodeEndpoint.endsWith("/"))
-      permanodeEndpoint += "/"
-
-    const arrayURL = permanode.split("/");
-
-    const baseUrl = arrayURL.slice(0, arrayURL.length - 3).join("/");
-    var derivedBasePath = arrayURL.slice(arrayURL.length - 3, arrayURL.length).join("/");
-
-    //Assert basePath is beginning and ending with a slash (required)
-    if (!derivedBasePath.endsWith("/"))
-      derivedBasePath += "/";
-
-    if (!derivedBasePath.startsWith("/"))
-      derivedBasePath = "/" + derivedBasePath;
-
-    const node = new SingleNodeClient(baseUrl, { basePath: derivedBasePath });
+    const node = new SingleNodeClient(permanode, { basePath: "/" });
     const fetched = await mamFetchAll(node, root, 'restricted', sideKey, chunkSize);
     const result = [];
     if (fetched && fetched.length > 0) {
