@@ -18,7 +18,7 @@
     }
   ],
   "dependencies": {
-    "@iota/core": "^1.0.0-beta.30",
+    "@iota/iota.js": "^1.5.3",
     "@iota/mam.js": "^1.5.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",

@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const isEmpty = require('lodash/isEmpty');
 const { createChannel, createMessage, mamAttach, mamFetchAll, TrytesHelper } = require('@iota/mam.js');
+const { SingleNodeClient } = require('@iota/iota.js');
 const { getSettings, logMessage } = require('./firebase');
 
 const generateSeed = (length = 81) => {
