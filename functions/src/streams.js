@@ -79,7 +79,7 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
 
   } catch (attachError) {
     const attachErrorMessage = 'Streams attach message failed';
-    console.error(attachErrorMessage, attachError);
+    console.error(attachErrorMessage, JSON.stringify(attachError));
     throw new Error(attachErrorMessage, attachError);
   }
 }
@@ -132,7 +132,7 @@ const fetch = async (channelState, streamId = null) => {
 
   } catch (fetchError) {
     const fetchErrorMessage = 'Streams fetch message failed';
-    console.error(fetchErrorMessage, fetchError);
+    console.error(fetchErrorMessage, JSON.stringify(fetchError));
     throw new Error(fetchErrorMessage, fetchError);
   }
 }

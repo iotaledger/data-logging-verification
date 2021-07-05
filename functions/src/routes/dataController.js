@@ -20,7 +20,7 @@ exports.log = async (req, res) => {
             !params.streamId ||
             !params.type 
         ) {
-            console.error("Log data failed. Params: ", params);
+            console.error("Log data failed. Params: ", JSON.stringify(params));
             return res.status(400).json({ error: "Ensure all fields are included" });
         }
 
@@ -77,7 +77,7 @@ exports.log = async (req, res) => {
         // Store stream metadata & message
         const result = await storeStreamMessage(params.streamId, streamDetails, message);
         if (typeof result !== 'boolean' || !result) {
-            console.error('Store message failed', result);
+            console.error('Store message failed', JSON.stringify(result));
             return res.status(400).send({ status: "error", error: 'Error while saving message' });
         }
 
@@ -90,7 +90,7 @@ exports.log = async (req, res) => {
             explorer
         });
     } catch (error) {
-        console.error("Log data failed. Params: ", req.body, error);
+        console.error("Log data failed. Params: ", JSON.stringify(req.body), JSON.stringify(error));
         return res.send({ status: "error", error: error.message, code: error.code });
     };
 };
@@ -100,7 +100,7 @@ exports.read = async (req, res) => {
         // Check Fields
         const params = req.body;
             if (!params || !params.streamId) {
-            console.error("Read stream failed. Params: ", params);
+            console.error("Read stream failed. Params: ", JSON.stringify(params));
             return res.status(400).json({ error: "Ensure all fields are included" });
         }
 
@@ -112,7 +112,7 @@ exports.read = async (req, res) => {
 
         return res.json(result);
     } catch (error) {
-        console.error("Read stream failed. Params: ", req.body, error);
+        console.error("Read stream failed. Params: ", JSON.stringify(req.body), JSON.stringify(error));
         return res.send({ status: "error", error: error.message, code: error.code });
     };
 };
@@ -122,7 +122,7 @@ exports.verify = async (req, res) => {
         // Check Fields
         const params = req.body;
         if (!params || !params.payload || !params.streamId) {
-            console.error("Verify message failed. Params: ", params);
+            console.error("Verify message failed. Params: ", JSON.stringify(params));
             return res.status(400).json({ error: "Ensure all fields are included" });
         }
 
@@ -205,7 +205,7 @@ exports.verify = async (req, res) => {
 
         return res.json(response);
     } catch (error) {
-        console.error("Verify message failed. Params: ", req.body, error);
+        console.error("Verify message failed. Params: ", JSON.stringify(req.body), JSON.stringify(error));
         return res.send({ status: "error", error: error.message, code: error.code });
     };
 };
@@ -215,7 +215,7 @@ exports.trade_verify = async (req, res) => {
         // Check Fields
         const params = req.body;
         if (!params || !params.streamIdProducer || !params.streamIdConsumer || !params.streamIdAgreedBid) {
-            console.error("Verify trade failed. Params: ", params);
+            console.error("Verify trade failed. Params: ", JSON.stringify(params));
             return res.status(400).json({ error: "Ensure all fields are included" });
         }
 
@@ -392,7 +392,7 @@ exports.trade_verify = async (req, res) => {
 
         return res.json(response);
     } catch (error) {
-        console.error("Verify trade failed. Params: ", req.body, error);
+        console.error("Verify trade failed. Params: ", JSON.stringify(req.body), JSON.stringify(error));
         return res.send({ status: "error", error: error.message, code: error.code });
     };
 };
