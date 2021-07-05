@@ -1,16 +1,17 @@
 const crypto = require('crypto');
 const isEmpty = require('lodash/isEmpty');
 const { createChannel, createMessage, mamAttach, mamFetchAll, TrytesHelper } = require('@iota/mam.js');
+const { SingleNodeClient } = require('@iota/iota.js');
 const { getSettings, logMessage } = require('./firebase');
 
 const generateSeed = (length = 81) => {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ9';
   let seed = '';
   while (seed.length < length) {
-      const byte = crypto.randomBytes(1);
-      if (byte[0] < 243) {
-          seed += charset.charAt(byte[0] % 27);
-      }
+    const byte = crypto.randomBytes(1);
+    if (byte[0] < 243) {
+      seed += charset.charAt(byte[0] % 27);
+    }
   }
   return seed;
 };
@@ -54,7 +55,6 @@ const publish = async (payload, tag, currentState = {}, streamId = null) => {
 
     // Attach the message.    
     const { messageId } = await mamAttach(node, message, tag || defaultTag);
-    
     channelState.root = root;
     channelState.address = message.address;
 
@@ -98,21 +98,21 @@ const fetch = async (channelState, streamId = null) => {
 
   try {
     // Setup the details for the channel.
-    const { chunkSize, node } = settings.tangle;
+    const { chunkSize, permanode } = settings.tangle;
     const { root, sideKey } = channelState;
 
     settings.enableCloudLogs && logs.push('Fetching from Tangle, please wait...', root);
 
+    const node = new SingleNodeClient(permanode, { basePath: "/" });
     const fetched = await mamFetchAll(node, root, 'restricted', sideKey, chunkSize);
     const result = [];
-        
     if (fetched && fetched.length > 0) {
-        for (let i = 0; i < fetched.length; i++) {
-          fetched[i] && fetched[i].message && 
+      for (let i = 0; i < fetched.length; i++) {
+        fetched[i] && fetched[i].message &&
           result.push(JSON.parse(TrytesHelper.toAscii(fetched[i].message)));
-        }
+      }
     }
-    
+
     if (settings.enableCloudLogs) {
       if (result.length) {
         // Log success
